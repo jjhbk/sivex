@@ -9,7 +9,9 @@
     "moduleResolution": "bundler",
     "module": "ESNext",
     "target": "ES2022",
-    "lib": ["ES2022"]
+    "lib": ["ES2022"],
+    "types": ["node"]
+
   },
   "references": [
     { "path": "../core" }

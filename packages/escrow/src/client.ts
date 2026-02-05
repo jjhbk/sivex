@@ -64,9 +64,9 @@ export async function getTask(taskId: string): Promise<{
   });
 
   return {
-    creator: result[0],
-    assignee: result[1],
-    amount: result[2],
-    state: result[3],
+    creator: (result as any)[0],
+    assignee: (result as any)[1],
+    amount: (result as any)[2],
+    state: (result as any)[3],
   };
 }
