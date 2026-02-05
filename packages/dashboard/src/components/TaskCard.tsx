@@ -26,9 +26,16 @@ export function TaskCard({ task, onClick }: { task: ApiTask; onClick?: () => voi
     >
       <div className="flex items-start justify-between mb-2">
         <h3 className="font-semibold text-foreground">{task.title}</h3>
-        <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${STATUS_COLORS[task.status] || STATUS_COLORS.open}`}>
-          {task.status}
-        </span>
+        <div className="flex gap-1">
+          <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${STATUS_COLORS[task.status] || STATUS_COLORS.open}`}>
+            {task.status}
+          </span>
+          {task.escrowStatus && (
+            <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-primary text-primary-foreground">
+              ⛓️ Escrow
+            </span>
+          )}
+        </div>
       </div>
 
       <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{task.objective}</p>

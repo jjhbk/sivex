@@ -105,6 +105,9 @@ export default function TaskDetailPage({ params }: { params: { id: string } }) {
   if (error) return <div className="text-destructive">{error}</div>;
   if (!task) return <div className="text-muted-foreground">Task not found</div>;
 
+  const escrowStates = ['Funded', 'Assigned', 'Completed', 'Failed', 'Disputed'];
+  const escrowStatus = task.escrowStatus?.state || -1;
+
   return (
     <div>
       <div className="flex items-start justify-between mb-6">
@@ -114,9 +117,16 @@ export default function TaskDetailPage({ params }: { params: { id: string } }) {
           </button>
           <h1 className="text-2xl font-bold text-foreground">{task.title}</h1>
         </div>
-        <span className="text-xs font-medium px-3 py-1 rounded-full bg-secondary text-secondary-foreground">
-          {task.status}
-        </span>
+        <div className="flex gap-2">
+          <span className="text-xs font-medium px-3 py-1 rounded-full bg-secondary text-secondary-foreground">
+            {task.status}
+          </span>
+          {escrowStatus >= 0 && (
+            <span className="text-xs font-medium px-3 py-1 rounded-full bg-primary text-primary-foreground">
+              {escrowStates[escrowStatus]}
+            </span>
+          )}
+        </div>
       </div>
 
       <div className="bg-card border border-border rounded-lg p-6 mb-6">
@@ -192,6 +202,35 @@ export default function TaskDetailPage({ params }: { params: { id: string } }) {
                   </div>
                 );
               })}
+          </div>
+        </div>
+      )}
+
+      {/* Escrow Status */}
+      {task.escrowStatus && (
+        <div className="bg-card border border-border rounded-lg p-6 mb-6">
+          <h2 className="font-semibold text-foreground mb-4">Blockchain Status</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Escrow State</p>
+              <p className="text-sm font-medium text-foreground">{escrowStates[escrowStatus]}</p>
+            </div>
+            {task.escrowStatus.assignee && (
+              <div>
+                <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Assignee (Blockchain)</p>
+                <p className="text-sm font-mono text-foreground truncate">{task.escrowStatus.assignee}</p>
+              </div>
+            )}
+            <div>
+              <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Locked Amount</p>
+              <p className="text-sm font-medium text-foreground">{formatWei(task.escrowStatus.amount)}</p>
+            </div>
+            {task.escrowStatus.txHash && (
+              <div>
+                <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Transaction Hash</p>
+                <p className="text-sm font-mono text-primary truncate">{task.escrowStatus.txHash}</p>
+              </div>
+            )}
           </div>
         </div>
       )}

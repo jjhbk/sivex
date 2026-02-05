@@ -2,6 +2,7 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import { z } from 'zod';
 import http from 'node:http';
+import { getAllTools, getToolNames, executeTool } from './tool-manager.js';
 
 const AGENT_NAME = process.env.AGENT_NAME || 'UnnamedAgent';
 const AGENT_PORT = Number(process.env.AGENT_PORT) || 3001;
@@ -22,26 +23,45 @@ export class AgentMcpServer {
   }
 
   private registerTools() {
-    for (const cap of AGENT_CAPABILITIES) {
+    // Register tools from tool manager
+    const allTools = getAllTools();
+
+    for (const tool of allTools) {
       this.server.tool(
-        cap,
-        { input: z.string().describe('The input/prompt for this capability') },
-        async ({ input }) => ({
-          content: [
-            { type: 'text' as const, text: `[${cap}] Processed: ${input}` },
-          ],
-        }),
+        tool.name,
+        { input: z.string().describe(tool.description) },
+        async ({ input }) => {
+          try {
+            const result = await executeTool(tool.name, input);
+            return {
+              content: [
+                { type: 'text' as const, text: result },
+              ],
+            };
+          } catch (err) {
+            const errorMsg = err instanceof Error ? err.message : String(err);
+            return {
+              content: [
+                { type: 'text' as const, text: `Error: ${errorMsg}` },
+              ],
+              isError: true,
+            };
+          }
+        },
       );
     }
 
     this.server.tool(
       'list_capabilities',
       { input: z.string().optional().describe('Unused') },
-      async () => ({
-        content: [
-          { type: 'text' as const, text: JSON.stringify(AGENT_CAPABILITIES) },
-        ],
-      }),
+      async () => {
+        const toolNames = getToolNames();
+        return {
+          content: [
+            { type: 'text' as const, text: JSON.stringify(toolNames) },
+          ],
+        };
+      },
     );
 
     this.server.tool(

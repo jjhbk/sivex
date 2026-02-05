@@ -18,22 +18,41 @@ export function AgentCard({ agent, reputation }: { agent: ApiAgent; reputation?:
         </span>
       </div>
 
-      <div className="flex flex-wrap gap-1 mb-3">
-        {agent.capabilities.map((cap) => (
-          <span key={cap} className="text-xs bg-secondary text-secondary-foreground px-2 py-0.5 rounded">
-            {cap}
-          </span>
-        ))}
-      </div>
-
-      {reputation !== undefined && (
-        <div className="flex items-center gap-2 mt-2">
-          <span className="text-xs text-muted-foreground">Reputation:</span>
-          <span className="text-sm font-semibold text-primary">{reputation.toFixed(1)}</span>
+      <div className="space-y-3">
+        <div>
+          <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Capabilities</p>
+          <div className="flex flex-wrap gap-1">
+            {agent.capabilities.map((cap) => (
+              <span key={cap} className="text-xs bg-secondary text-secondary-foreground px-2 py-0.5 rounded">
+                {cap}
+              </span>
+            ))}
+          </div>
         </div>
-      )}
 
-      <p className="text-xs text-muted-foreground mt-2 truncate">{agent.walletAddress}</p>
+        {agent.tools && agent.tools.length > 0 && (
+          <div>
+            <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Tools</p>
+            <div className="space-y-1">
+              {agent.tools.map((tool) => (
+                <div key={tool.name} className="text-xs">
+                  <span className="font-medium text-foreground">{tool.name}</span>
+                  <p className="text-muted-foreground">{tool.description}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {reputation !== undefined && (
+          <div className="flex items-center gap-2 pt-2 border-t border-border">
+            <span className="text-xs text-muted-foreground">Reputation:</span>
+            <span className="text-sm font-semibold text-primary">{reputation.toFixed(1)}</span>
+          </div>
+        )}
+
+        <p className="text-xs text-muted-foreground truncate">{agent.walletAddress}</p>
+      </div>
     </div>
   );
 }

@@ -4,6 +4,7 @@ import { registerAgentRoutes } from './routes/agents';
 import { registerTaskRoutes } from './routes/tasks';
 import { registerReputationRoutes } from './routes/reputation';
 import { registerEventRoutes } from './routes/events';
+import { registerToolRoutes } from './routes/tools';
 
 const PORT = Number(process.env.REGISTRY_PORT) || 3000;
 
@@ -31,6 +32,7 @@ registerAgentRoutes(fastify);
 registerTaskRoutes(fastify);
 registerReputationRoutes(fastify);
 registerEventRoutes(fastify);
+registerToolRoutes(fastify);
 
 // Start server with async initialization
 async function start() {

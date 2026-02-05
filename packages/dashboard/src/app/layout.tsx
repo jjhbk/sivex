@@ -13,6 +13,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             <a href="/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Overview</a>
             <a href="/tasks" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Tasks</a>
             <a href="/agents" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Agents</a>
+            <a href="/tools" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Tools</a>
             <a href="/review" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Review</a>
           </div>
         </nav>

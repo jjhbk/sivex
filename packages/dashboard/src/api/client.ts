@@ -1,5 +1,10 @@
 const REGISTRY_URL = process.env.NEXT_PUBLIC_REGISTRY_URL || 'http://localhost:3000';
 
+export interface ApiTool {
+  name: string;
+  description: string;
+}
+
 export interface ApiAgent {
   id: string;
   name: string;
@@ -9,6 +14,7 @@ export interface ApiAgent {
   mcpEndpoint: string;
   registeredAt: number;
   heartbeatAt: number;
+  tools?: ApiTool[];
 }
 
 export interface ApiTask {
@@ -27,6 +33,12 @@ export interface ApiTask {
   createdAt: number;
   updatedAt: number;
   bids?: ApiBid[];
+  escrowStatus?: {
+    state: number;
+    assignee: string;
+    amount: string;
+    txHash?: string;
+  };
 }
 
 export interface ApiBid {
@@ -142,5 +154,38 @@ export async function disputeTask(id: string): Promise<void> {
 export async function fetchReputation(agentId: string): Promise<ApiReputation> {
   const res = await fetch(`${REGISTRY_URL}/reputation/${agentId}`);
   if (!res.ok) throw new Error(`Failed to fetch reputation: ${res.status}`);
+  return res.json();
+}
+
+// --- Tools ---
+export async function fetchTools(): Promise<{ name: string; agents: string[]; description: string }[]> {
+  const res = await fetch(`${REGISTRY_URL}/tools`);
+  if (!res.ok) throw new Error(`Failed to fetch tools: ${res.status}`);
+  const data = await res.json();
+  return data.tools || [];
+}
+
+export async function fetchAgentTools(agentId: string): Promise<ApiTool[]> {
+  const res = await fetch(`${REGISTRY_URL}/agents/${agentId}/tools`);
+  if (!res.ok) throw new Error(`Failed to fetch agent tools: ${res.status}`);
+  const data = await res.json();
+  return data.tools || [];
+}
+
+export async function registerTool(input: {
+  agentId: string;
+  toolName: string;
+  description: string;
+  inputSchema?: object;
+}): Promise<{ success: boolean; message: string }> {
+  const res = await fetch(`${REGISTRY_URL}/tools/register`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  });
+  if (!res.ok) {
+    const body = await res.text();
+    throw new Error(`Failed to register tool: ${body}`);
+  }
   return res.json();
 }

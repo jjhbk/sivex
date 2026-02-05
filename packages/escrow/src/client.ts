@@ -70,3 +70,67 @@ export async function getTask(taskId: string): Promise<{
     state: (result as any)[3],
   };
 }
+
+export async function assignTask(
+  taskId: string,
+  assigneeAddress: string,
+  registryPrivateKey: string,
+): Promise<`0x${string}`> {
+  if (!ESCROW_ADDRESS) throw new Error('ESCROW_CONTRACT_ADDRESS not set');
+
+  const account = privateKeyToAccount(registryPrivateKey as `0x${string}`);
+  const client = createWalletClient({
+    account,
+    chain: anvil,
+    transport: http(ANVIL_URL),
+  });
+
+  return client.writeContract({
+    address: ESCROW_ADDRESS,
+    abi: ESCROW_ABI,
+    functionName: 'assignTask',
+    args: [taskIdToBytes32(taskId), assigneeAddress as `0x${string}`],
+  });
+}
+
+export async function completeTask(
+  taskId: string,
+  registryPrivateKey: string,
+): Promise<`0x${string}`> {
+  if (!ESCROW_ADDRESS) throw new Error('ESCROW_CONTRACT_ADDRESS not set');
+
+  const account = privateKeyToAccount(registryPrivateKey as `0x${string}`);
+  const client = createWalletClient({
+    account,
+    chain: anvil,
+    transport: http(ANVIL_URL),
+  });
+
+  return client.writeContract({
+    address: ESCROW_ADDRESS,
+    abi: ESCROW_ABI,
+    functionName: 'completeTask',
+    args: [taskIdToBytes32(taskId)],
+  });
+}
+
+export async function failTask(
+  taskId: string,
+  registryPrivateKey: string,
+): Promise<`0x${string}`> {
+  if (!ESCROW_ADDRESS) throw new Error('ESCROW_CONTRACT_ADDRESS not set');
+
+  const account = privateKeyToAccount(registryPrivateKey as `0x${string}`);
+  const client = createWalletClient({
+    account,
+    chain: anvil,
+    transport: http(ANVIL_URL),
+  });
+
+  return client.writeContract({
+    address: ESCROW_ADDRESS,
+    abi: ESCROW_ABI,
+    functionName: 'failTask',
+    args: [taskIdToBytes32(taskId)],
+  });
+}

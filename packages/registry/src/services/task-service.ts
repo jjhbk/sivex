@@ -7,6 +7,16 @@ import { settle } from './settlement-service';
 import { recordEvent } from './reputation-service';
 import type { TaskStatus } from '@sivex/core';
 
+// Optional escrow support - imported lazily
+async function getEscrowStatus(taskId: string) {
+  try {
+    const escrowModule = await import('@sivex/escrow/client');
+    return await escrowModule.getTask(taskId);
+  } catch {
+    return null;
+  }
+}
+
 export async function createTask(input: {
   title: string;
   objective: string;
@@ -159,7 +169,20 @@ function serializeTask(task: typeof tasks.$inferSelect) {
 export async function getTask(taskId: string) {
   const task = await db.select().from(tasks).where(eq(tasks.id, taskId)).get();
   if (!task) return null;
-  return serializeTask(task);
+
+  const serialized = serializeTask(task);
+
+  // Fetch escrow status from blockchain if available
+  const escrowTask = await getEscrowStatus(taskId);
+  if (escrowTask) {
+    (serialized as any).escrowStatus = {
+      state: escrowTask.state,
+      assignee: escrowTask.assignee,
+      amount: escrowTask.amount.toString(),
+    };
+  }
+
+  return serialized;
 }
 
 export async function getTasks(filters?: { status?: string; capabilities?: string }) {
@@ -180,5 +203,20 @@ export async function getTasks(filters?: { status?: string; capabilities?: strin
     );
   }
 
-  return filtered;
+  // Add escrow status to all tasks (non-blocking)
+  const withEscrow = await Promise.all(
+    filtered.map(async (task) => {
+      const escrowTask = await getEscrowStatus(task.id);
+      if (escrowTask) {
+        (task as any).escrowStatus = {
+          state: escrowTask.state,
+          assignee: escrowTask.assignee,
+          amount: escrowTask.amount.toString(),
+        };
+      }
+      return task;
+    })
+  );
+
+  return withEscrow;
 }

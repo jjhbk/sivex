@@ -3,11 +3,17 @@ import { registerAgent, connectSSE, sendHeartbeat, submitBid } from './registry-
 import { evaluateBid } from './bidder';
 import { runTask } from './task-runner';
 import { AgentMcpServer } from './mcp-server';
+import { getToolNames } from './tool-manager.js';
 
 const AGENT_ID = process.env.AGENT_ID || 'agent-' + Date.now();
 const AGENT_NAME = process.env.AGENT_NAME || 'UnnamedAgent';
 const AGENT_PORT = Number(process.env.AGENT_PORT) || 3001;
-const AGENT_CAPABILITIES = (process.env.AGENT_CAPABILITIES || 'general').split(',').map(c => c.trim());
+
+// Get capabilities from tool manager (which includes built-in + registered tools)
+// Fall back to environment variable if explicitly set
+const AGENT_CAPABILITIES = process.env.AGENT_CAPABILITIES
+  ? (process.env.AGENT_CAPABILITIES || 'general').split(',').map(c => c.trim())
+  : getToolNames();
 
 // Track assigned tasks to avoid re-bidding
 const assignedTasks = new Set<string>();

@@ -107,8 +107,8 @@ export function registerTaskRoutes(fastify: FastifyInstance) {
     return reply.status(200).send({ ok: true });
   });
 
-  // PUT /tasks/:id/dispute — flag task for human review
-  fastify.put('/tasks/:id/dispute', async (request, reply) => {
+  // POST /tasks/:id/dispute — flag task for human review
+  fastify.post('/tasks/:id/dispute', async (request, reply) => {
     const { id } = request.params as { id: string };
     const result = await disputeTask(id);
     if (!result.ok) {
