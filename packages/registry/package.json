@@ -10,8 +10,8 @@
     "db:migrate": "npx drizzle-kit migrate"
   },
   "dependencies": {
+    "@libsql/client": "^0.17.0",
     "@sivex/core": "workspace:*",
-    "better-sqlite3": "^11.0.0",
     "drizzle-orm": "^0.28.0",
     "fastify": "^4.25.0",
     "uuid": "^13.0.0",
