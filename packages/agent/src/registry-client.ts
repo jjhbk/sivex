@@ -85,21 +85,39 @@ export async function submitResult(
   return parseJson(res);
 }
 
+export async function getAgentsByCapability(capability: string): Promise<AgentRegistration[]> {
+  try {
+    const res = await fetch(`${REGISTRY_URL}/agents`);
+    if (!res.ok) {
+      throw new Error(`Failed to fetch agents: ${res.status}`);
+    }
+    const agents = await parseJson<AgentRegistration[]>(res);
+    return agents.filter(a => a.capabilities.includes(capability) && a.mcpEndpoint);
+  } catch (err) {
+    console.warn(
+      `[agent] Failed to discover agents with capability "${capability}": ${err instanceof Error ? err.message : String(err)}`,
+    );
+    return [];
+  }
+}
+
 export function connectSSE(
   onEvent: (type: string, payload: unknown) => void,
 ): EventSource {
   const es = new EventSource(`${REGISTRY_URL}/events`);
 
-const bind = (type: string) =>
-  es.addEventListener(type, (e: Event) => {
-    try {
-      const me = e as MessageEvent;
-      onEvent(type, JSON.parse(me.data));
-    } catch {
-      console.warn(`[agent] Failed to parse SSE payload for ${type}`);
-    }
-  });
-
+  const bind = (type: string) =>
+    es.addEventListener(type, (e: Event) => {
+      try {
+        const me = e as MessageEvent;
+        const data = JSON.parse(me.data);
+        // Registry wraps payload as { type, payload }, unwrap it
+        const actualPayload = data.payload !== undefined ? data.payload : data;
+        onEvent(type, actualPayload);
+      } catch (err) {
+        console.warn(`[agent] Failed to parse SSE payload for ${type}: ${err instanceof Error ? err.message : String(err)}`);
+      }
+    });
 
   bind('task.created');
   bind('task.updated');

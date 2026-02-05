@@ -15,22 +15,31 @@ function clamp(val: number, min: number, max: number): number {
 }
 
 export function evaluateBid(task: TaskInfo, agentCapabilities: string[]): BidResult | null {
-  // Hard gate: agent must have ALL required capabilities
-  const hasAll = task.requiredCapabilities.every(cap => agentCapabilities.includes(cap));
-  if (!hasAll) return null;
+  // Soft gate: agent must have at least one required capability
+  // (can delegate missing capabilities with Phase 4 P2P delegation)
+  const matchedCapabilities = task.requiredCapabilities.filter(cap => agentCapabilities.includes(cap));
+  if (matchedCapabilities.length === 0) return null;
 
   const budget = BigInt(task.budget);
 
   // Bid 80% of budget
   const proposedCost = (budget * 80n) / 100n;
 
-  // Confidence: 0.5 base + 0.1 per extra capability beyond required
+  // Confidence: base 0.3, increases with capability match ratio
+  // Full match (100%) → 0.8, Half match (50%) → 0.55, One match (1 of many) → lower
+  const capabilityRatio = matchedCapabilities.length / task.requiredCapabilities.length;
+  const baseConfidence = 0.3 + 0.5 * capabilityRatio; // Range: 0.3 to 0.8
+
+  // Bonus for extra capabilities beyond required
   const extraCaps = agentCapabilities.filter(cap => !task.requiredCapabilities.includes(cap)).length;
-  const confidence = clamp(0.5 + 0.1 * extraCaps, 0, 0.95);
+  const confidence = clamp(baseConfidence + 0.05 * extraCaps, 0, 0.95);
 
   // Matched capabilities for strategy description
-  const matched = agentCapabilities.filter(cap => task.requiredCapabilities.includes(cap));
-  const strategy = `Will execute using capabilities: ${matched.join(', ')}`;
+  const missingCaps = task.requiredCapabilities.filter(cap => !agentCapabilities.includes(cap));
+  let strategy = `Will execute using: ${matchedCapabilities.join(', ')}`;
+  if (missingCaps.length > 0) {
+    strategy += `; Will delegate: ${missingCaps.join(', ')}`;
+  }
 
   return {
     proposedCost: proposedCost.toString(),

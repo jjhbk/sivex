@@ -73,6 +73,7 @@ interface TaskUpdatedPayload {
   objective?: string;
   description?: string;
   successCriteria?: string;
+  requiredCapabilities?: string[];
 }
 
 async function handleTaskCreated(task: TaskCreatedPayload) {
@@ -123,8 +124,10 @@ async function handleTaskUpdated(task: TaskUpdatedPayload) {
           description: task.description || '',
           successCriteria: task.successCriteria || '',
           assignedAgentId: AGENT_ID,
+          requiredCapabilities: task.requiredCapabilities || [],
         },
         AGENT_ID,
+        AGENT_CAPABILITIES,
       );
     } catch (err) {
       console.error(`[agent] Task execution failed:`, err);

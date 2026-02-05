@@ -15,7 +15,12 @@
       "Bash(pnpm install:*)",
       "Bash(pnpm --help:*)",
       "Bash(tree:*)",
-      "Bash(wc:*)"
+      "Bash(wc:*)",
+      "Bash(xargs -I {} sh -c 'echo \"\"=== {} ===\"\" && head -15 {}')",
+      "Bash(done)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(cat:*)"
     ]
   }
 }

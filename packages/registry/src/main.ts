@@ -21,8 +21,10 @@ fastify.options('/*', async (_request, reply) => {
   return reply.status(200).send();
 });
 
-// Initialize database
-initDb();
+// Health check
+fastify.get('/health', async (_request, reply) => {
+  return reply.send({ status: 'ok', timestamp: Date.now() });
+});
 
 // Register routes
 registerAgentRoutes(fastify);
@@ -30,18 +32,22 @@ registerTaskRoutes(fastify);
 registerReputationRoutes(fastify);
 registerEventRoutes(fastify);
 
-// Health check
-fastify.get('/health', async (_request, reply) => {
-  return reply.send({ status: 'ok', timestamp: Date.now() });
-});
+// Start server with async initialization
+async function start() {
+  // Initialize database first
+  await initDb();
+  console.log('[registry] Database initialized');
 
-// Start
-fastify.listen({ port: PORT, host: '0.0.0.0' }, (err) => {
-  if (err) {
-    console.error(err);
+  // Then start server
+  try {
+    await fastify.listen({ port: PORT, host: '0.0.0.0' });
+    console.log(`[registry] Sivex Registry running on port ${PORT}`);
+  } catch (err) {
+    console.error('[registry] Failed to start:', err);
     process.exit(1);
   }
-  console.log(`[registry] Sivex Registry running on port ${PORT}`);
-});
+}
+
+start();
 
 export default fastify;

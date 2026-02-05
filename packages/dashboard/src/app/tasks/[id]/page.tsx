@@ -2,16 +2,22 @@
 
 import { useState, useEffect } from 'react';
 import { useEvents } from '@/hooks/useEvents';
-import { fetchTask, assignTask, verifyTask, disputeTask } from '@/api/client';
-import type { ApiTask } from '@/api/client';
+import { fetchTask, assignTask, verifyTask, disputeTask, fetchReputation } from '@/api/client';
+import type { ApiTask, ApiBid } from '@/api/client';
 
 function formatWei(wei: string): string {
   const num = Number(BigInt(wei)) / 1e18;
   return num.toFixed(4) + ' ETH';
 }
 
+interface BidWithScore extends ApiBid {
+  score: number;
+  reputationScore: number;
+}
+
 export default function TaskDetailPage({ params }: { params: { id: string } }) {
   const [task, setTask] = useState<ApiTask | null>(null);
+  const [bidsWithScores, setBidsWithScores] = useState<BidWithScore[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -19,6 +25,37 @@ export default function TaskDetailPage({ params }: { params: { id: string } }) {
     try {
       const data = await fetchTask(params.id);
       setTask(data);
+
+      // Initialize bids without scores
+      if (data.bids && data.bids.length > 0) {
+        const initialBids = data.bids.map((bid) => ({
+          ...bid,
+          score: 0,
+          reputationScore: 0,
+        }));
+        setBidsWithScores(initialBids);
+
+        // Load reputation scores in background
+        data.bids.forEach((bid) => {
+          fetchReputation(bid.agentId)
+            .then((rep) => {
+              const budget = BigInt(data.budget);
+              const cost = BigInt(bid.proposedCost);
+              const costRatio = Number(cost) / Number(budget);
+              const score = rep.score * bid.confidence * (1 - costRatio);
+              setBidsWithScores((prev) =>
+                prev.map((b) =>
+                  b.id === bid.id
+                    ? { ...b, score, reputationScore: rep.score }
+                    : b
+                )
+              );
+            })
+            .catch(() => {
+              // On error, just leave score as 0
+            });
+        });
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load task');
     } finally {
@@ -126,22 +163,35 @@ export default function TaskDetailPage({ params }: { params: { id: string } }) {
       </div>
 
       {/* Bids */}
-      {task.bids && task.bids.length > 0 && (
-        <div className="bg-card border border-border rounded-lg p-6 mb-6">
+      {//task?.bids && task.bids.length > 0 && (
+      (  <div className="bg-card border border-border rounded-lg p-6 mb-6">
           <h2 className="font-semibold text-foreground mb-3">Bids ({task.bids.length})</h2>
           <div className="space-y-2">
-            {task.bids.map((bid) => (
-              <div key={bid.id} className="flex items-center justify-between bg-secondary rounded p-3">
-                <div>
-                  <p className="text-sm text-foreground font-medium">{bid.agentId}</p>
-                  <p className="text-xs text-muted-foreground">{bid.strategy}</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm text-foreground">{formatWei(bid.proposedCost)}</p>
-                  <p className="text-xs text-muted-foreground">Confidence: {(bid.confidence * 100).toFixed(0)}%</p>
-                </div>
-              </div>
-            ))}
+            {task.bids
+              .map((bid) => {
+                const bidWithScore = bidsWithScores.find((b) => b.id === bid.id);
+                return (
+                  <div
+                    key={bid.id}
+                    className="flex items-center justify-between rounded p-3 bg-secondary hover:bg-secondary/80"
+                  >
+                    <div className="flex-1">
+                      <p className="text-sm text-foreground font-medium">{bid.agentId}</p>
+                      <p className="text-xs text-muted-foreground">{bid.strategy}</p>
+                    </div>
+                    <div className="text-right ml-4">
+                      <p className="text-sm text-foreground">{formatWei(bid.proposedCost)}</p>
+                      <p className="text-xs text-muted-foreground">Confidence: {(bid.confidence * 100).toFixed(0)}%</p>
+                      {bidWithScore && bidWithScore.reputationScore > 0 && (
+                        <>
+                          <p className="text-xs text-muted-foreground">Rep: {bidWithScore.reputationScore.toFixed(1)}</p>
+                          <p className="text-xs font-medium text-foreground">Score: {bidWithScore.score.toFixed(2)}</p>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
           </div>
         </div>
       )}

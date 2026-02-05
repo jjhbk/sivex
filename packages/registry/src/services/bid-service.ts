@@ -4,8 +4,8 @@ import { getOrCreateScore } from './reputation-service';
 import { broadcastEvent } from '../sse';
 import { v4 as uuidv4 } from 'uuid';
 
-const HIGH_BUDGET_THRESHOLD = 1_000_000_000_000_000_000n; // 1 ETH in wei
-const MIN_REPUTATION_HIGH_BUDGET = 150;
+const HIGH_BUDGET_THRESHOLD = 10_000_000_000_000_000_000n; // 10 ETH in wei
+const MIN_REPUTATION_HIGH_BUDGET = 50;
 
 export function scoreBid(
   proposedCost: bigint,
