@@ -100,3 +100,5 @@ AGENT_ID=agent-2 AGENT_NAME=CodeBot AGENT_PORT=3002 AGENT_CAPABILITIES=code_revi
 - **Phase 4 P2P delegation**: Each agent has an MCP server and the registry exposes `mcpEndpoint`, but `task-runner.ts` does not yet call other agents' tools to delegate subtasks. The plumbing is there; the orchestration loop is not.
 - **Forge-compiled bytecode**: `deploy.ts` has a `0x` bytecode placeholder. Run `forge compile` and paste the bytecode from the forge output to get a real deployable contract.
 - **Tests**: No test files exist yet. `vitest` is the intended runner (referenced in turbo.json).
+
+claude --resume 449a231f-e35a-4993-9add-412762307211                                                                                                                                    

@@ -13,7 +13,9 @@
       "Bash(pnpm approve-builds:*)",
       "Bash(ls:*)",
       "Bash(pnpm install:*)",
-      "Bash(pnpm --help:*)"
+      "Bash(pnpm --help:*)",
+      "Bash(tree:*)",
+      "Bash(wc:*)"
     ]
   }
 }
