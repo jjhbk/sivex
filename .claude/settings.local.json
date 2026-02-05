@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "Bash(pnpm --version:*)",
+      "Bash(node:*)",
+      "Bash(npx:*)",
+      "Bash(anvil:*)",
+      "Bash(forge:*)",
+      "Bash(solc:*)",
+      "Bash(# Check what global packages / tools are available npm list -g --depth=0)",
+      "Bash(# Check MCP SDK exports in detail - what''s actually available at 1.26.0 npm pack @modelcontextprotocol/sdk@1.26.0 --dry-run)",
+      "Bash(pnpm approve-builds:*)",
+      "Bash(ls:*)",
+      "Bash(pnpm install:*)",
+      "Bash(pnpm --help:*)"
+    ]
+  }
+}

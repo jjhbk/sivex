@@ -1,0 +1,27 @@
+node_modules
+dist
+
+# SQLite
+*.db
+*.db-wal
+*.db-shm
+
+# Environment
+.env
+
+# Next.js
+.next
+
+# Turborepo cache
+.turbo
+
+# Forge output
+out
+
+# Escrow deploy manifest (contains live contract address)
+deploy.json
+
+# Test coverage
+coverage
+
+*.env
